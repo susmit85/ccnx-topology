@@ -32,8 +32,10 @@ os.system("ccn_repo ccnrepo")
 os.system(self_n_c) 
 
    
-#publish test1 for bw
+#publish test1 for bw, ping for ping
 os.system("ccnputfile ccnx:/ccnx.org/csu/topology/" + name + "/bw test1")
+os.system("ccnputfile ccnx:/ccnx.org/csu/topology/" + name + "/ping ping")
+
 
 #publish final file
 f = file('final', 'wb')
@@ -46,6 +48,8 @@ mbw = 0.0
 
 
 w_time = random.randint(1,5)
+
+#publish a very small ping file
 
 
 while (True): #infinite loop
@@ -103,6 +107,9 @@ while (True): #infinite loop
             for item in remote_set_list:
                 if self_name.replace('/self','') not in item:
                     print "getting file"
+
+                    
+                    #get file
                     get_file_com = "ccngetfile " + item + " " + item.split('/')[-1] + ".temp"
                     print get_file_com
                     garbage, std_err_out = os.popen4(get_file_com)
@@ -115,7 +122,18 @@ while (True): #infinite loop
                         mark_stale = "ccnrm " + item + "/bw"
                         os.system(mark_stale)
 
-                                                
+                        #get delay, update dict
+                        try:
+                            get_ping_file_com = "ccngetfile " + item + "/ping ping1"
+                            print get_ping_file_com 
+                            gabage, ping_file_stdout = os.popen4(get_ping_file_com)
+	                    ping_file_op = ping_file_stdout.read()
+                            print ping_file_op
+                            time_p = float(ping_file_op.split("ccngetfile took:")[1].split('\n')[0].replace('ms',''))
+                        except:
+                            time_p = 0
+                        print "RTT: ", time_p
+
                         #at every 30 interation, check bw and delay
                         if (counter % 5) == 0:
                             print "checking bandwidth and delay"
@@ -132,12 +150,12 @@ while (True): #infinite loop
                          #   counter = 0
                          
                                 time_m = float(std_err1.split("ccngetfile took:")[1].split('\n')[0].replace('ms',''))
-                                print time_m
-                                bytes = float(std_err1.split("ccngetfile took:")[1].split('\n')[1].split('got')[1].split('bytes')[0])
+                                print "CCNGETTIME: ",time_m
+                                byte = float(std_err1.split("ccngetfile took:")[1].split('\n')[1].split('got')[1].split('bytes')[0])
                            # counter = counter + 1   
     
-                                print bytes
-                                bw = ((bytes*8)/(time_m/1000))
+                                print "BYTES", byte
+                                bw = ((byte*8)/(time_m/1000))
                                 mbw = bw /(1024*1024)
                                 print "Bw %s %s Mbps" %(bw, mbw)
                                 
