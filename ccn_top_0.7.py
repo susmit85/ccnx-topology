@@ -54,8 +54,8 @@ w_time = random.randint(1,5)
 
 while (True): #infinite loop
     time.sleep(w_time)
-    
-    
+    os.system("rm *.temp")         
+
     try:
 	#get you name, identified by 'self'
 	#naming convension is ccnx:/csu/topology/a
@@ -68,10 +68,6 @@ while (True): #infinite loop
         self_name = self_name_op.read()
         self_name = self_name.split('\n')[0]
 
-#        ping_file_path = ''
-#        for item in self_name.split('/')[:-1]:
-#            ping_file_path = ping_file_path + item + '/'
-#        self_name = ping_file_path[:-1]
         print 'self_name', self_name
         
         #get the remote connections, identified by 'topology'
@@ -101,14 +97,12 @@ while (True): #infinite loop
         # if you can not fetch a file, it's dead
             f1 = file('topology','wb')
             f1.close()
-
             f1 = file('topology','wb')
             f1.write("self ->  self\n")
             for item in remote_set_list:
                 if self_name.replace('/self','') not in item:
                     print "getting file"
 
-                    
                     #get file
                     get_file_com = "ccngetfile " + item + " " + item.split('/')[-1] + ".temp"
                     print get_file_com
@@ -128,7 +122,7 @@ while (True): #infinite loop
                             print get_ping_file_com 
                             gabage, ping_file_stdout = os.popen4(get_ping_file_com)
 	                    ping_file_op = ping_file_stdout.read()
-                            print ping_file_op
+#                            print ping_file_op
                             time_p = float(ping_file_op.split("ccngetfile took:")[1].split('\n')[0].replace('ms',''))
                         except:
                             time_p = 0
@@ -137,41 +131,35 @@ while (True): #infinite loop
                         #at every 30 interation, check bw and delay
                         if (counter % 5) == 0:
                             print "checking bandwidth and delay"
-                            get_bw_file_com = "ccngetfile " + item + "/bw test1"
+                            get_bw_file_com = "ccngetfile " + item + "/bw test2"
                             
-                            print get_bw_file_com
+#                            print get_bw_file_com
                             try:
                                 ccn_rem_com = "ccnrm " + item + "/bw"
                                 garbage, std_err_out1 = os.popen4(get_bw_file_com)
                                 std_err1 = std_err_out1.read()
-                                print std_err1
+#                                print std_err1
                                 ccn_rem_com = "ccnrm " + item + "/bw"
                                 os.system(ccn_rem_com)
-                         #   counter = 0
-                         
                                 time_m = float(std_err1.split("ccngetfile took:")[1].split('\n')[0].replace('ms',''))
                                 print "CCNGETTIME: ",time_m
                                 byte = float(std_err1.split("ccngetfile took:")[1].split('\n')[1].split('got')[1].split('bytes')[0])
-                           # counter = counter + 1   
     
                                 print "BYTES", byte
                                 bw = ((byte*8)/(time_m/1000))
                                 mbw = bw /(1024*1024)
                                 print "Bw %s %s Mbps" %(bw, mbw)
                                 
-                                
                             except:
                                 print "No bw file"
                                 mbw = 0
-                                                        
-                        
                         
                         print "Bw %s Mbps", mbw    
-                        f1.write('"' + self_name.replace('/self','') + \
-                        '"' + ' -> ' + '"' + item + '"' + ' [label= "'+ str(mbw) +' Mbps"dir=both];\n') 
-            
-                            
+			f1.write('"' + self_name.replace('/self','') + '"' + ' -> ' \
++ '"' + item + '"' + ' [label= "'+ 'BW= ' + str(mbw) +'Mbps,' + 'RTT = ' + str(time_p)\
++  'ms"' + 'dir=both];\n')
 
+                        
             f1.close()
             os.system("cp topology topology.temp")
             os.system("ccnputfile " + self_name.replace('/self','') + " topology")
@@ -203,15 +191,8 @@ while (True): #infinite loop
         f_w.close()
         os.system("dot -Tpng final -o final.png")
 	counter = counter + 1
-#        os.system("rm *.temp")         
+
 
     except:
         e = sys.exc_info()[1]
         print e
-        
-
-
-
-       
-
-
