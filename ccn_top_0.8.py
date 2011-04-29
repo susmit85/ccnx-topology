@@ -234,7 +234,7 @@ while (True): #infinite loop
                             except:
                                 print "No bw file"
                                 mbw = 0
-
+                        mbw = float("%.3f" %mbw)
                         print "Bw %s Mbps", mbw
                         f1.write('"' + self_name.replace('/self','') + '"' + ' -> ' \
 + '"' + item + '"' + ' [label= "'+ 'BW= ' + str(mbw) +'Mbps,' + 'RTT = ' + str(time_p)\
