@@ -135,7 +135,6 @@ while (True): #infinite loop
                     print "getting file"
 
                     #get file
-                    #################can replace this by os.system#####################
                     get_file_com = "ccngetfile " + item + " " + item.split('/')[-1] + ".temp"
                     print get_file_com
                     garbage, std_err_out = os.popen4(get_file_com)
@@ -143,20 +142,20 @@ while (True): #infinite loop
                     #mark as stale
                     if 'Cannot retrieve first block of' in std_err:
                                 print 'ERR: Can not fetch anything from %s' %(item)
-                                rem_c = item.split('/')[-1] + '.cache'
-                                os.system(rem_c)
+                      #          rem_c = item.split('/')[-1] + '.cache'
+                      #          os.system(rem_c)
 
-                                rem_p = item.split('/')[-1] + '.pit'
-                                os.system(rem_p)
+#                                rem_p = item.split('/')[-1] + '.pit'
+ #                               os.system(rem_p)
 
-                                rem_t = item.split('/')[-1] + '.temp'
-                                os.system(rem_t)
+  #                              rem_t = item.split('/')[-1] + '.temp'
+   #                             os.system(rem_t)
 
 
                     else:
 
                         print "successfully fetched..writting"
-                        mark_stale = "ccnrm " + item + "/bw"
+                        mark_stale = "ccnrm " + item
                         os.system(mark_stale)
 
                         #get delay, update dict
