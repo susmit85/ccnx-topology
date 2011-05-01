@@ -1,2 +1,3 @@
-Get all test1, ping, ccn_top_0.7.py
+Get all test1, ping, ccn_top_0.8.py, publish_cache.py
+to run, $python ccn_top_0.8.py $name tcp/udp $hostname
 
