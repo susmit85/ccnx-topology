@@ -47,7 +47,7 @@ init_flag = 0
 counter = 0
 bw = 0.0
 mbw = 0.0
-bwdict = {}
+
 
 w_time = random.randint(1,5)
 
@@ -135,55 +135,42 @@ while (True): #infinite loop
                     print "getting file"
 
                     #get file
-                    #################can replace this by os.system#####################
                     get_file_com = "ccngetfile " + item + " " + item.split('/')[-1] + ".temp"
                     print get_file_com
                     garbage, std_err_out = os.popen4(get_file_com)
                     std_err = std_err_out.read()
                     #mark as stale
-                    rm_get_file_com = "ccnrm " + item
-                    os.system(rm_get_file_com)
-
                     if 'Cannot retrieve first block of' in std_err:
                                 print 'ERR: Can not fetch anything from %s' %(item)
-                       #         rem_c = item.split('/')[-1] + '.cache'
-                       #         os.system(rem_c)
+                      #          rem_c = item.split('/')[-1] + '.cache'
+                      #          os.system(rem_c)
 
-                       #         rem_p = item.split('/')[-1] + '.pit'
-                      #          os.system(rem_p)
+#                                rem_p = item.split('/')[-1] + '.pit'
+ #                               os.system(rem_p)
 
-                       #         rem_t = item.split('/')[-1] + '.temp'
-                       #         os.system(rem_t)
+  #                              rem_t = item.split('/')[-1] + '.temp'
+   #                             os.system(rem_t)
 
 
                     else:
 
                         print "successfully fetched..writting"
-                     #   mark_stale = "ccnrm " + item + "/bw"
-                    #    os.system(mark_stale)
+                        mark_stale = "ccnrm " + item
+                        os.system(mark_stale)
 
                         #get delay, update dict
-                        time_t = 0.0
-                        loss_c = 0
-                        for iter in range(3):
-                            try:
-                                get_ping_file_com = "ccngetfile " + item + "/ping ping1"
-                                print get_ping_file_com
-                                gabage, ping_file_stdout = os.popen4(get_ping_file_com)
-                                ping_file_op = ping_file_stdout.read()
-    #                            print ping_file_op
-                                time_p = float(ping_file_op.split("ccngetfile took:")[1].split('\n')[0].replace('ms',''))
-                                time_t = time_t + time_p
-                                mark_stale = "ccnrm " + item + "/ping"
-                                os.system(mark_stale)
-                            except:
-                                time_p = 0
-                                loss_c = loss_c + 1
-                        time_f = (time_t / 3)
-                        time_f = float("%.3f" %time_f)
-                        loss_c = ((1.0*loss_c)*100)/3
-                        loss_c = float("%.3f" %loss_c)
-                        print "RTT: %s Loss %s" %(time_f, loss_c)
+                        try:
+                            get_ping_file_com = "ccngetfile " + item + "/ping ping1"
+                            print get_ping_file_com
+                            gabage, ping_file_stdout = os.popen4(get_ping_file_com)
+                            ping_file_op = ping_file_stdout.read()
+#                            print ping_file_op
+                            time_p = float(ping_file_op.split("ccngetfile took:")[1].split('\n')[0].replace('ms',''))
+                            mark_stale = "ccnrm " + item + "/ping"
+                            os.system(mark_stale)
+                        except:
+                            time_p = 0
+                        print "RTT: ", time_p
 
 
                         #get cache, update dict
@@ -220,13 +207,9 @@ while (True): #infinite loop
                             continue
 
 ######################have to fix bug which is changing the bw, use dictionary##############################
-                        r_name = item.split('/')[-1]
-                        if bwdict.has_key[r_name] is False:
-                            bwdict[r_name] = 0.0
+
                         #at every 30 interation, check bw and delay
                         if (counter % 5) == 0:
-                            #item = ccnx:/ccnx.org/csu/topology/b
-                            
                             print "checking bandwidth and delay"
                             get_bw_file_com = "ccngetfile " + item + "/bw test2"
 
@@ -246,17 +229,15 @@ while (True): #infinite loop
                                 bw = ((byte*8)/(time_m/1000))
                                 mbw = bw /(1024*1024)
                                 print "Bw %s %s Mbps" %(bw, mbw)
-                                bwdict[r_name] = mbw
 
                             except:
                                 print "No bw file"
                                 mbw = 0
                         mbw = float("%.3f" %mbw)
                         print "Bw %s Mbps", mbw
-                        print "bwdict", bwdict
                         f1.write('"' + self_name.replace('/self','') + '"' + ' -> ' \
-+ '"' + item + '"' + ' [label= "'+ 'BW= ' + str(bwdict[r_name]) +'Mbps,' + 'RTT = ' + str(time_f)\
-+  'ms,' + 'Loss = ' + str (loss_c) + '%,"' + 'dir=both];\n')
++ '"' + item + '"' + ' [label= "'+ 'BW= ' + str(mbw) +'Mbps,' + 'RTT = ' + str(time_p)\
++  'ms"' + 'dir=both];\n')
 
 
             f1.close()
@@ -329,6 +310,5 @@ while (True): #infinite loop
     except:
         e = sys.exc_info()[1]
         print e
-
 
 
