@@ -255,7 +255,7 @@ while (True): #infinite loop
                         print "Bw %s Mbps", mbw
                         print "bwdict", bwdict
                         f1.write('"' + self_name.replace('/self','') + '"' + ' -> ' \
-+ '"' + item + '"' + ' [label= "'+ 'BW= ' + str(bwdict[r_name]) +'Mbps,' + 'RTT = ' + str(time_f)\
++ '"' + item + '"' + ' [label= "'+ 'BW= ' + str(float("%.3f" %bwdict[r_name])) +'Mbps,' + 'RTT = ' + str(time_f)\
 +  'ms,' + 'Loss = ' + str (loss_c) + '%,"' + 'dir=both];\n')
 
 
