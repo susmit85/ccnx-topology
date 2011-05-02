@@ -221,7 +221,7 @@ while (True): #infinite loop
 
 ######################have to fix bug which is changing the bw, use dictionary##############################
                         r_name = item.split('/')[-1]
-                        if bwdict.has_key[r_name] is False:
+                        if bwdict.has_key(r_name) is False:
                             bwdict[r_name] = 0.0
                         #at every 30 interation, check bw and delay
                         if (counter % 5) == 0:
