@@ -22,6 +22,7 @@ import os,sys
 import random
 import time
 import publish_cache
+import cPickle as pickle
 
 name = sys.argv[1]
 protocol = sys.argv[2]
@@ -30,6 +31,9 @@ self_n_c  = "ccndc add ccnx:/ccnx.org/csu/topology/" + name + "/self " + protoco
 print self_n_c
 os.system("ccndlogging none")
 os.system("ccn_repo ccnrepo")
+os.system("rm *.temp")
+os.system("rm *.pit")
+os.system("rm *.cache")
 os.system(self_n_c)
 
 
@@ -54,7 +58,7 @@ w_time = random.randint(1,5)
 #publish a very small ping file
 while (True): #infinite loop
     time.sleep(w_time)
-    os.system("rm *.temp")
+ #   os.system("rm *.temp")
  #   os.system("rm *.cache")
  #   os.system("rm *.pit")
 
@@ -87,6 +91,22 @@ while (True): #infinite loop
                 f1.write('"' + self_name.replace('/self','') + '"' + ' -> ' + '"' +  remote_item + '"' + ' [dir=both];\n')
             f1.close
 
+            #ccnputfile ccnx:/csu/topology/a/topology topology
+            pub_name = "ccnputfile " + self_name.replace('/self','') + " topology"
+            print pub_name
+            os.system(pub_name)
+            init_flag = 1
+
+
+        else:
+        #see if remotes are up by fetching file, add them to your topology
+        # if you can not fetch a file, it's dead
+            f1 = file('topology','wb')
+            f1.close()
+            f1 = file('topology','wb')
+            f1.write("self ->  self\n")
+            
+
             #publish your cache
             content_string = ''
             print "browsing cache"
@@ -115,45 +135,37 @@ while (True): #infinite loop
 
             print pit_content
 
-
-            #ccnputfile ccnx:/csu/topology/a/topology topology
-            pub_name = "ccnputfile " + self_name.replace('/self','') + " topology"
-            print pub_name
-            os.system(pub_name)
-            init_flag = 1
-
-
-        else:
-        #see if remotes are up by fetching file, add them to your topology
-        # if you can not fetch a file, it's dead
-            f1 = file('topology','wb')
-            f1.close()
-            f1 = file('topology','wb')
-            f1.write("self ->  self\n")
+            
+            
             for item in remote_set_list:
                 if self_name.replace('/self','') not in item:
                     print "getting file"
 
                     #get file
                     #################can replace this by os.system#####################
+                    
                     get_file_com = "ccngetfile " + item + " " + item.split('/')[-1] + ".temp"
                     print get_file_com
-                    garbage, std_err_out = os.popen4(get_file_com)
+                    try:
+                        garbage, std_err_out = os.popen4(get_file_com)
+                    except:
+                        std_err_out = 'Cannot retrieve first block of'
+                        pass
+
                     std_err = std_err_out.read()
                     #mark as stale
                     rm_get_file_com = "ccnrm " + item
                     os.system(rm_get_file_com)
 
                     if 'Cannot retrieve first block of' in std_err:
-                                print 'ERR: Can not fetch anything from %s' %(item)
-                       #         rem_c = item.split('/')[-1] + '.cache'
-                       #         os.system(rem_c)
-
-                       #         rem_p = item.split('/')[-1] + '.pit'
-                      #          os.system(rem_p)
-
-                       #         rem_t = item.split('/')[-1] + '.temp'
-                       #         os.system(rem_t)
+                        print 'ERR: Can not fetch anything from %s' %(item)
+                        #remove local data
+                        rem_c = "rm " + item.split('/')[-1] + '.cache'
+                        os.system(rem_c)
+                        rem_p = "rm " + item.split('/')[-1] + '.pit'
+                        os.system(rem_p)
+                        rem_t = "rm " + item.split('/')[-1] + '.temp'
+                        os.system(rem_t)
 
 
                     else:
@@ -161,6 +173,8 @@ while (True): #infinite loop
                         print "successfully fetched..writting"
                      #   mark_stale = "ccnrm " + item + "/bw"
                     #    os.system(mark_stale)
+                        mark_stale = "ccnrm " + item
+                        os.system(mark_stale)
 
                         #get delay, update dict
                         time_t = 0.0
@@ -199,7 +213,7 @@ while (True): #infinite loop
 #                            time_p = float(cache_file_op.split("ccngetfile took:")[1].split('\n')[0].replace('ms',''))
                         except:
                             print 'error in getting cache'
-                            continue
+                            pass
 #                            time_p = 0
 #                        print "RTT: ", time_p
 
@@ -217,7 +231,7 @@ while (True): #infinite loop
 #                            time_p = float(cache_file_op.split("ccngetfile took:")[1].split('\n')[0].replace('ms',''))
                         except:
                             print 'error in getting pit'
-                            continue
+                            pass
 
 ######################have to fix bug which is changing the bw, use dictionary##############################
                         r_name = item.split('/')[-1]
@@ -302,6 +316,7 @@ while (True): #infinite loop
                     cache_set.add(line.strip())
                 f1.close()
         print cache_set
+
         f_cache = file('cache_final','w')
         for item in sorted(cache_set):
             print item
@@ -323,6 +338,22 @@ while (True): #infinite loop
             print final_str
             f_cache.write(final_str[:-1] + '\n')
         f_cache.close()
+
+
+        pit_str = ""
+
+
+        for f2name in dirlist:
+            if (os.path.splitext(f2name)[-1] == '.pit'):
+                f2 = open(f2name,  'r')
+                for line in f2:
+                    pit_str = pit_str + line
+                f2.close()
+        print pit_str
+
+        f_pit = file('pit_final','w')
+        f_pit.write(pit_str)
+        f_pit.close()
 
 
 
